@@ -48,7 +48,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
             put(COL_NOMBRE, nombre)
             put(COL_CORREO, correo)
             put(COL_PASSWORD, password)
-
         }
 
         val resultado = db.insert(TABLE_USUARIOS, null, datos)
@@ -56,8 +55,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(
        return resultado != -1L
 
     }
-
-
     //metodo para consultar usuario
     fun iniciarSesion(correo: String, password: String):Boolean {
         val db = readableDatabase
