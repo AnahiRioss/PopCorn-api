@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/main"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#101B18"
+            android:fillViewport="true">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+        <ImageView
+                android:id="@+id/imgDetallePelicula"
+                android:layout_width="match_parent"
+                android:layout_height="430dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="Póster de la película" />
+
+        <TextView
+                android:id="@+id/tvDetallePelicula"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:lineSpacingExtra="6dp" />
+
+    </LinearLayout>
+</ScrollView>

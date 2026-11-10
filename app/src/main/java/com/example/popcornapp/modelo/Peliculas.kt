@@ -17,8 +17,9 @@ data class Peliculas(
     val adult: Boolean?,
     val video: Boolean?
 ) {
-    //METODO PAA OBTENER LA IMAGEN EN GRANDE
+    //METODO PARA OBTENER LA IMAGEN EN GRANDE
     fun obtenerImagenGrande(): String {
+
         return if (!poster_path.isNullOrEmpty()) {
             "https://image.tmdb.org/t/p/w500$poster_path"
         } else {

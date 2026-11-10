@@ -1,14 +1,15 @@
+
 package com.example.popcornapp
 
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.content.Intent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
-
-// Importamos tus nuevas clases de modelo y red
 import com.example.popcornapp.modelo.Peliculas
 import com.example.popcornapp.modelo.TheMovieResponse
 import com.example.popcornapp.network.RetrofitClient
@@ -18,61 +19,131 @@ import retrofit2.Response
 
 class HomeActivity : AppCompatActivity() {
 
-    private lateinit var tvResultado: TextView
-    private lateinit var imgPelicula: ImageView
+    private lateinit var tvEstado: TextView
+    private lateinit var contenedorTerror: LinearLayout
+    private lateinit var contenedorRomance: LinearLayout
+    private lateinit var contenedorComedia: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_home)
 
-        tvResultado = findViewById(R.id.tvResultado)
-        // Nota: Asegúrate de que el ID en tu XML siga siendo imgAlbum, o cámbialo a imgPelicula
-        imgPelicula = findViewById(R.id.imgPelicula)
+        tvEstado = findViewById(R.id.tvEstado)
+        contenedorTerror = findViewById(R.id.contenedorTerror)
+        contenedorRomance = findViewById(R.id.contenedorRomance)
+        contenedorComedia = findViewById(R.id.contenedorComedia)
 
-        obtenerPelicula()
+        tvEstado.text = "Cargando peliculas..."
+
+        // Obtener peliculas de cada genero
+        obtenerPeliculas("27", contenedorTerror)
+        obtenerPeliculas("10749", contenedorRomance)
+        obtenerPeliculas("35", contenedorComedia)
     }
 
-    private fun obtenerPelicula() {
-        // Debes colocar aquí el token o clave que te dio TMDB
-        val miToken = "Bearer AQUI_PONES_TU_TOKEN_DE_TMDB"
+    // Metodo para obtener las peliculas del API
+    private fun obtenerPeliculas(genero: String, contenedor: LinearLayout) {
 
-        // Llamamos al método que definimos en TheMovieApi.kt
+        // Token de acceso de TMDB
+        val miToken = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxNjY2MmI1ZGFjNWY1MTM1NWQ5NjliMTBjYTg2OWY1MyIsIm5iZiI6MTc5MzExNTI4NC4zMTYsInN1YiI6IjZhZTBjNDk0YjY3ZDZhNmU0MDEyMTI0MiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.f_ufGfrOPNuGImuathA3349cDNZY3HN4WICtPQOGyxk"
+
         RetrofitClient.api.obtenerPeliculas(
-            token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIxZjlmMDJiODg2ZmU0NGQwZGRjODhlNjU0OTYyZGNjNyIsIm5iZiI6MTc5MzExNDAzMi43MDcsInN1YiI6IjZhZTBiZmIwMTIwYmY1N2JmZWUwNjg5MCIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.vAz7Hd1TnsDpHAc6LbpWr6UJhBE-eU7FoDy5AX5X0y8",
-            generos = "28" // El ID 28 corresponde al género de Acción en TMDB
+            token = miToken,
+            generos = genero
         ).enqueue(object : Callback<TheMovieResponse> {
 
-            // MÉTODO PARA VERIFICAR QUE LA RESPUESTA SEA CORRECTA
-            override fun onResponse(call: Call<TheMovieResponse?>, response: Response<TheMovieResponse?>) {
+            // Metodo para verificar que la respuesta sea correcta
+            override fun onResponse(call: Call<TheMovieResponse>, response: Response<TheMovieResponse>) {
 
-                // Variable que obtiene los resultados (ahora es una lista de películas)
-                val peliculas = response.body()?.results
+                val peliculas = response.body()?.results ?: emptyList()
 
-                if (!peliculas.isNullOrEmpty()) {
+                //agregamos response.isSuccessfun para que se compruebe que el servidor haya respondido correctamente
+                if (response.isSuccessful && peliculas.isNotEmpty()) {
 
-                    // Guardamos la información de la primera película
-                    val pelicula = peliculas[0]
-
-                    // Mostrar información en el TextView
-                    tvResultado.text = "Título de la película: ${pelicula.title} \n\n" +
-                            "Fecha de estreno: ${pelicula.release_date} \n" +
-                            "Calificación: ${pelicula.vote_average}"
-
-                    // Mostrar imagen (póster) usando Glide
-                    Glide.with(this@HomeActivity)
-                        .load(pelicula.obtenerImagenGrande())
-                        .into(imgPelicula)
+                    mostrarPeliculas(peliculas, contenedor)
+                    tvEstado.text = "Peliculas cargadas"
 
                 } else {
-                    Toast.makeText(this@HomeActivity, "No hay resultados", Toast.LENGTH_SHORT).show()
+
+                    Toast.makeText(
+                        this@HomeActivity,
+                        //response.code nos ayuda si TMDB no nos devuelve nuestra pelicula saber que error ocurrio
+                        "Error al obtener peliculas: ${response.code()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
 
-            // MÉTODO PARA IDENTIFICAR SI NO HAY RESPUESTA
-            override fun onFailure(call: Call<TheMovieResponse?>, t: Throwable) {
-                Toast.makeText(this@HomeActivity, "ERROR EN EL API", Toast.LENGTH_SHORT).show()
+            // Metodo para identificar si no hay respuesta
+            override fun onFailure(
+                call: Call<TheMovieResponse>,
+                t: Throwable
+            ) {
+
+                tvEstado.text = "Error al conectar con TMDB"
+
+                Toast.makeText(
+                    this@HomeActivity,
+                    "ERROR EN EL API: ${t.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         })
+    }
+
+    // Metodo para mostrar un listado de peliculas
+    private fun mostrarPeliculas(peliculas: List<Peliculas>, contenedor: LinearLayout) {
+
+        // Evitar resultados duplicados
+        contenedor.removeAllViews()
+
+        // Ciclo que recorre la informacion de las peliculas
+        for (pelicula in peliculas) {
+
+            // Indicar la vista en la que se va a mostrar la informacion
+            val vistaPelicula = layoutInflater.inflate(
+                R.layout.item_pelicula,
+                contenedor,
+                false
+            )
+
+            val imgPoster = vistaPelicula.findViewById<ImageView>(R.id.imgPosterPelicula)
+            val tvNombrePelicula = vistaPelicula.findViewById<TextView>(R.id.tvNombrePelicula)
+            val tvCalificacion = vistaPelicula.findViewById<TextView>(R.id.tvCalificacion)
+
+            // Asignar informacion de la pelicula
+            tvNombrePelicula.text = pelicula.title ?: "Pelicula sin titulo"
+            tvCalificacion.text = "⭐ ${pelicula.vote_average ?: 0.0}"
+
+            // Cargar imagen con Glide
+            Glide.with(this)
+                .load(pelicula.obtenerImagenGrande())
+                .centerCrop()
+                .into(imgPoster)
+
+            // Evento para seleccionar una pelicula
+            vistaPelicula.setOnClickListener {
+
+                val idPelicula = pelicula.id
+
+                if (idPelicula != null) {
+
+                    val intent = Intent(this@HomeActivity, MovieDetailActivity::class.java)
+
+                    intent.putExtra("ID_PELICULA", idPelicula)
+                    intent.putExtra("NOMBRE_PELICULA", pelicula.title)
+                    intent.putExtra("SINOPSIS_PELICULA", pelicula.overview)
+                    intent.putExtra("FECHA_PELICULA", pelicula.release_date)
+                    intent.putExtra("CALIFICACION_PELICULA", pelicula.vote_average)
+                    intent.putExtra("IMAGEN_PELICULA", pelicula.obtenerImagenGrande())
+
+                    startActivity(intent)
+                }
+            }
+
+            // Mostrar toda la informacion
+            contenedor.addView(vistaPelicula)
+        }
     }
 }
