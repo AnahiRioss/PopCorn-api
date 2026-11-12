@@ -18,7 +18,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialsymbolsoutlined/contacts_product/outline_contacts_product_24.xml" />
+                                      <entry key="url" value="file:/$USER_HOME$/AppData/Local/Android/Sdk/icons/material/materialsymbolsoutlined/cards_star/outline_cards_star_24.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -28,8 +28,8 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="color" value="908b8b" />
-                            <entry key="outputName" value="user" />
+                            <entry key="color" value="e6d7d7" />
+                            <entry key="outputName" value="favoritos" />
                             <entry key="sourceFile" value="C:\popCorn" />
                           </map>
                         </option>
